@@ -233,6 +233,31 @@ module.exports = function (config) {
           }
         }
 
+
+        /**
+         * shortName will look for header cells in a scenario outline example table containing an asterisk (*) and only append those kv pairs
+         * to the name of the scenario outline.  the idea being an example table can be quite large and maybe only certain cells represent
+         * uniqueness across all rows
+         */
+        let shortName = Object.keys(outlineExample).filter((key) => key.includes("*")).reduce((acc, key) => {
+            acc[key] = outlineExample[key];
+            return acc;
+          }, {});
+
+        outlineScenario["short_name"] = outlineScenario.name + ` ${ Object.keys(shortName).length === 0 ? JSON.stringify(outlineExample) : JSON.stringify(shortName) }`;
+
+        /**
+         * adds scenario outline examples table information
+         */
+        outlineScenario.steps.push({
+          keyword: "Examples",
+          arguments: [
+            {
+              rows: [ { cells: headerCells.map((cell) => { return cell.value }), }, { cells: rowCells.map((cell) => { return cell.value; }), }, ],
+            },
+          ],
+        })
+
         outlineScenario.name += ` ${JSON.stringify(outlineExample)}`;
 
         // example tables can have tagging associated with them
